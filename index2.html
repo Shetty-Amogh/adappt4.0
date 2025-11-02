@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NeoBank — Login / Signup (DigiLocker-style Verification)</title>
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --card: #ffffff;
+        --accent: #0066d6;
+        --muted: #6b7280;
+        --glass: rgba(255, 255, 255, 0.6);
+      }
+      * {
+        box-sizing: border-box;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+          "Helvetica Neue", Arial;
+      }
+      body {
+        background: linear-gradient(180deg, #f7f9fc, var(--bg));
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .app {
+        width: 100%;
+        max-width: 420px;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        color: #0f172a;
+      }
+      p.small {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 11px;
+        border-radius: 10px;
+        font-size: 15px;
+        border: 1px solid #e6eaf0;
+      }
+      input:focus {
+        outline: none;
+        box-shadow: 0 6px 18px rgba(6, 102, 214, 0.08);
+        border-color: var(--accent);
+      }
+      button {
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid rgba(0, 102, 214, 0.12);
+      }
+      button.ghost1 {
+        background: blue;
+        color: var(--accent);
+        color: white;
+        border: 1px solid rgba(0, 102, 214, 0.12);
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      .link {
+        color: var(--accent);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .mt {
+        margin-top: 12px;
+      }
+      /* Sidebar styles */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: #f4f6f8;
+        padding-top: 20px;
+        box-shadow: 2px 0px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      .sidebar ul li {
+        padding: 15px;
+        text-align: center;
+      }
+
+      .sidebar ul li a {
+        text-decoration: none;
+        color: #07294d;
+        font-weight: 600;
+      }
+
+      .sidebar ul li:hover {
+        background-color: #0066d6;
+      }
+
+      .sidebar ul li a:hover {
+        color: white;
+      }
+
+      /* navbar-like small header for dashboard */
+      .dashHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f3f7;
+        margin-bottom: 12px;
+      }
+      /* modal (frosted) */
+      .modalBack {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 12, 23, 0.45);
+        backdrop-filter: blur(3px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .modal {
+        width: 100%;
+        max-width: 520px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.9),
+          rgba(255, 255, 255, 0.85)
+        );
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 12px 40px rgba(3, 10, 25, 0.3);
+      }
+      .modal .steps {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .chip {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0, 102, 214, 0.08);
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .mutedBlock {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .centerCol {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .digilockerBtn {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: #0b5ed7;
+        color: #fff;
+        font-weight: 700;
+        border: none;
+      }
+      .digilockerIcon {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+      }
+      .progressText {
+        font-size: 13px;
+        color: #0b5ed7;
+        margin-top: 6px;
+      }
+      .statusSuccess {
+        color: #16a34a;
+        font-weight: 700;
+      }
+      .statusFail {
+        color: #dc2626;
+        font-weight: 700;
+      }
+      .smallMuted {
+        font-size: 12px;
+        color: #64748b;
+      }
+      footer.note {
+        margin-top: 12px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      /* responsive */
+      @media (max-width: 480px) {
+        .modal {
+          margin: 16px;
+        }
+      }
+
+      /* -----------------------
+         Dashboard additions
+         ----------------------- */
+      /* use larger card for dash */
+      .dash-card {
+        max-width: 800px; /* Increased max width for dashboard */
+      }
+      .dashboardGrid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      @media (min-width: 720px) {
+        .app {
+          max-width: 800px;
+        }
+        .dashboardGrid {
+          grid-template-columns: 2fr 1fr;
+        }
+      }
+
+      .glassy {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.66),
+          rgba(255, 255, 255, 0.56)
+        );
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 6px 22px rgba(3, 10, 25, 0.06);
+        border: 1px solid rgba(6, 102, 214, 0.06);
+      }
+      .balanceRow {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+      }
+      .balanceAmount {
+        font-size: 28px;
+        font-weight: 800;
+        color: #07294d;
+      }
+      .miniMuted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .actionsRow {
+        display: flex;
+        gap: 10px;
+      }
+      .actionBtn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 700;
+      }
+      .txnList {
+        max-height: 220px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .txnItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        background: rgba(6, 102, 214, 0.03);
+        border: 1px solid rgba(6, 102, 214, 0.04);
+      }
+      .txnItem .title {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .txnItem .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .positive {
+        color: #059669;
+        font-weight: 800;
+      }
+      .negative {
+        color: #dc2626;
+        font-weight: 800;
+      }
+      .dashFooter {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 12px;
+        color: #64748b;
+      }
+      .icons {
+        margin-top: 5px;
+        margin-right: 5px;
+      }
+      /* Button to trigger chatbox */
+      .chatbox-toggle-btn {
+        width: 100px;
+        position: fixed;
+        right: 20px;
+        bottom: 32px;
+        padding: 12px 18px;
+        background-color: #0066d6;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .chatbox-toggle-btn:hover {
+        background-color: #0056b3;
+      }
+
+      /* Chatbox Container */
+      .chatbox {
+        position: fixed;
+        right: 355px;
+        top: 39px;
+        width: 350px;
+        height: 81%;
+        background-color: #f1f1f1;
+        border-left: 2px solid #ccc;
+        box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      .chatbox.hidden {
+        transform: translateX(100%); /* Hidden off-screen */
+      }
+
+      .chatbox-header {
+        background-color: #0066d6;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chatbox-header span {
+        font-size: 18px;
+      }
+
+      .close-chatbox-btn {
+        background: none;
+        color: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .close-chatbox-btn:hover {
+        color: #ff0000;
+      }
+
+      /* Chatbox Content */
+      .chatbox-content {
+        flex-grow: 1;
+        padding: 10px;
+        overflow-y: auto;
+      }
+
+      .chatbox-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chatbox-input {
+        padding: 10px;
+        border: none;
+        border-top: 2px solid #ccc;
+        width: 100%;
+        font-size: 16px;
+        border-radius: 10px;
+      }
+
+      .chatbox-input:focus {
+        outline: none;
+      }
+      /* Account Management Styles */
+      .account-management {
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .account-management h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .section {
+        margin-bottom: 20px;
+      }
+
+      .section h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .section button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        background-color: #0066d6;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .section button:hover {
+        background-color: #0056b3;
+      }
+
+      /* Hide account management page by default */
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="appRoot">
+      <!-- Loan Calculator Modal Update -->
+      <div id="customerCareView" class="card dash-card hidden">
+        <div class="dashHeader">
+          <div><strong>Customer Care</strong></div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button id="backToDashboardFromCustomerCare" class="ghost">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+        <div style="padding: 8px 0">
+          <h1>Customer Care</h1>
+          <p>Welcome to NeoBank Customer Care. We're here to assist you.</p>
+          <p><strong>Phone:</strong> +91 8432145065</p>
+          <p><strong>Email:</strong> customer.support@neobank.com</p>
+          <p>
+            <strong>Address:</strong> G-4, Godrej-A1, NeoBank HQ, BKC,
+            Mumbai-400113
+          </p>
+          <p>
+            If you need any assistance, don't hesitate to reach out to our
+            support team.
+          </p>
+        </div>
+      </div>
+
+      <div id="loanCalculatorModal" class="card dash-card hidden">
+        <div class="dashHeader">
+          <div><strong>Loan Calculator</strong></div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button id="backToDashboardFromLoan" class="ghost">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div style="padding: 8px 0">
+          <h1>Loan Details</h1>
+
+          <!-- Loan Input Form -->
+          <div>
+            <label for="loanAmount">Loan Amount (₹)</label>
+            <input
+              type="number"
+              id="loanAmount"
+              placeholder="Enter loan amount"
+            />
+          </div>
+          <div>
+            <label for="loanDuration">Duration (Years)</label>
+            <input
+              type="number"
+              id="loanDuration"
+              placeholder="Enter loan duration"
+            />
+          </div>
+
+          <button id="calculateLoanBtn" class="actionBtn">
+            Calculate Loan
+          </button>
+
+          <!-- Loan Calculation Results -->
+          <div id="loanResults" class="hidden">
+            <h2>Loan Summary</h2>
+            <p>
+              <strong>Loan Amount:</strong> ₹<span
+                id="calculatedLoanAmount"
+              ></span>
+            </p>
+            <p>
+              <strong>Annual Interest Rate:</strong>
+              <span id="annualInterestRate"></span>%
+            </p>
+            <p>
+              <strong>Monthly Payment:</strong> ₹<span
+                id="monthlyPayment"
+              ></span>
+            </p>
+            <p>
+              <strong>Total Interest:</strong> ₹<span id="totalInterest"></span>
+            </p>
+            <p>
+              <strong>Total Amount to be Paid:</strong> ₹<span
+                id="totalAmount"
+              ></span>
+            </p>
+
+            <div>
+              <button id="acceptLoanBtn" class="actionBtn">Accept Loan</button>
+              <button id="declineLoanBtn" class="ghost">Decline Loan</button>
+            </div>
+          </div>
+
+          <!-- New Loan Button -->
+          <div>
+            <button id="newLoanBtn" class="ghost hidden">New Loan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loans Taken Section -->
+      <div id="loansTakenView" class="card dash-card hidden">
+        <div class="dashHeader">
+          <div><strong>Loans Taken</strong></div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button id="backToDashboardFromLoans" class="ghost">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div id="loanList">
+          <!-- List of loans will appear here dynamically -->
+        </div>
+      </div>
+
+      <!-- About Us Page -->
+      <div id="aboutUsView" class="card dash-card hidden">
+        <div class="dashHeader">
+          <div><strong>About NeoBank</strong></div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <button id="backToDashboardFromAbout" class="ghost">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+        <div style="padding: 8px 0">
+          <h1>About NeoBank</h1>
+          <p>
+            NeoBank is a digital-first bank offering seamless financial services
+            powered by cutting-edge technology. Our mission is to provide
+            customers with secure, fast, and convenient banking experiences. We
+            are committed to revolutionizing banking through innovation,
+            transparency, and customer-centricity.
+          </p>
+          <p>Our key features include:</p>
+          <ul>
+            <li>Instant account creation</li>
+            <li>Zero fees on online transactions</li>
+            <li>Smart savings and personalized budgeting tools</li>
+            <li>24/7 customer support</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- LOGIN CARD (default) -->
+      <div id="loginView" class="card">
+        <h1>NeoBank</h1>
+        <p class="muted">Secure digital banking — login to continue</p>
+
+        <div style="margin-top: 14px">
+          <input
+            id="loginUsername"
+            placeholder="Username"
+            autocomplete="username"
+          />
+        </div>
+        <div style="margin-top: 10px">
+          <input
+            id="loginPassword"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="mt">
+          <button id="loginBtn">Login</button>
+        </div>
+
+        <p class="small mt">
+          Don't have an account?
+          <span id="toSignup" class="link">Create account</span>
+        </p>
+        <p id="loginMsg" class="muted mt"></p>
+      </div>
+
+      <!-- SIGNUP CARD -->
+      <div id="signupView" class="card hidden">
+        <h1>Create Account</h1>
+        <p class="muted">
+          Please enter details exactly as on your government ID
+        </p>
+
+        <div style="margin-top: 12px">
+          <input id="suName" placeholder="Full Name" autocomplete="name" />
+        </div>
+        <div style="margin-top: 10px">
+          <input
+            id="suDob"
+            type="date"
+            placeholder="Date of birth (DD-MM-YYYY)"
+          />
+        </div>
+        <div style="margin-top: 10px">
+          <input
+            id="suPhone"
+            placeholder="Phone number"
+            inputmode="numeric"
+            autocomplete="tel"
+          />
+        </div>
+        <div style="margin-top: 10px">
+          <input
+            id="suUsername"
+            placeholder="Choose username"
+            autocomplete="username"
+          />
+        </div>
+        <div style="margin-top: 10px">
+          <input
+            id="suPassword"
+            type="password"
+            placeholder="Choose password"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="mt center" style="gap: 10px">
+          <button
+            id="verifyBtn"
+            class="digilockerBtn"
+            title="Verify with DigiLocker (upload ID)"
+          >
+            <span class="digilockerIcon" aria-hidden="true">
+              <!-- stylized lock/doc icon (not actual Digilocker logo) -->
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="3"
+                  y="8"
+                  width="18"
+                  height="12"
+                  rx="2"
+                  fill="#fff"
+                  stroke="rgba(255,255,255,0.3)"
+                />
+                <path
+                  d="M8 8V6a4 4 0 1 1 8 0v2"
+                  stroke="#fff"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            Verify with DigiLocker
+          </button>
+        </div>
+
+        <p id="verifyStatus" class="muted mt"></p>
+        <p class="smallMuted mt">
+          You will be asked to upload a photo of your government ID. Account
+          creation occurs only if verification succeeds.
+        </p>
+
+        <div class="mt center" style="gap: 10px">
+          <button id="createBtn" class="ghost hidden">
+            Create account (disabled until verified)
+          </button>
+          <button id="backToLogin" class="ghost">Back to Login</button>
+        </div>
+        <p id="signupMsg" class="muted mt"></p>
+        <footer class="note">
+          This prototype uses in-browser OCR for verification (Tesseract). For
+          production, integrate secure DigiLocker APIs.
+        </footer>
+      </div>
+      <!-- Account Management Section -->
+      <div id="accountManagementPage" class="account-management hidden">
+        <h2>Account Management</h2>
+
+        <!-- Account Details -->
+        <div class="section">
+          <h3>Account Details</h3>
+          <p>
+            <strong>Name:</strong> <span id="accountName">deepam sipani</span>
+          </p>
+          <p>
+            <strong>Username:</strong>
+            <span id="accountUsername">deepam</span>
+          </p>
+          <p>
+            <strong>Phone Number:</strong>
+            <span id="accountPhone">+91 8976156067</span>
+          </p>
+        </div>
+
+        <!-- Update Options -->
+        <div class="section">
+          <h3>Update Account</h3>
+          <button id="changeUsernameBtn">Change Username</button>
+          <button id="changePhoneBtn">Change Phone Number</button>
+          <button id="updatePasswordBtn">Update Password</button>
+        </div>
+
+        <!-- Account Deletion -->
+        <div class="section">
+          <h3>Delete Account</h3>
+          <button id="deleteAccountBtn">Delete Account</button>
+        </div>
+
+        <!-- Back Button -->
+        <button id="backToDashboardBtn">Back to Dashboard</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="dashView" class="card dash-card hidden">
+        <!-- Chatbox Button -->
+        <button id="chatboxToggle" class="chatbox-toggle-btn">
+          <img src="message-circle-question-mark.png" alt="" />
+        </button>
+
+        <!-- Chatbox -->
+        <div id="chatbox" class="chatbox hidden">
+          <div class="chatbox-header">
+            <span>Chat with Support</span>
+            <button id="closeChatbox" class="close-chatbox-btn">×</button>
+          </div>
+          <div class="chatbox-content">
+            <!-- Messages will appear here -->
+            <div class="chatbox-messages"></div>
+            <!-- Input area -->
+            <input type="text" id="chatInput" placeholder="Type a message..." />
+          </div>
+        </div>
+
+        <div class="sidebar">
+          <ul>
+            <button
+              id="accountManagementBtn"
+              class="actionBtn"
+              style="
+                background-color: transparent;
+                color: #07294d;
+                font-weight: 500;
+
+                cursor: pointer;
+              "
+            >
+              <img class="icons" height="20px" src="user.png" /> Profile</button
+            ><!-- Sidebar update -->
+            <!-- Sidebar Update -->
+            <li>
+              <a href="#NewLoan" id="newLoanLink">
+                <img class="icons" height="20px" src="badge-indian-rupee.png" />
+                New Loan
+              </a>
+            </li>
+            <li>
+              <a href="#CustomerCare" id="customerCareLink">
+                <img
+                  class="icons"
+                  height="20px"
+                  src="message-circle-question-mark.png"
+                />
+                Customer Care
+              </a>
+            </li>
+
+            <li>
+              <a href="#AboutUs" id="aboutUsLink">
+                <img class="icons" height="20px" src="info.png" /> About Us
+              </a>
+            </li>
+            <!-- Account Management Button -->
+          </ul>
+        </div>
+
+        <div class="dashHeader">
+          <div><strong id="dashBank">NeoBank</strong></div>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <!-- Language Toggle restored here, matching previous functionality -->
+            <button
+              id="langToggle"
+              class="ghost"
+              style="width: auto; padding: 6px 10px; font-size: 13px"
+            >
+              Toggle Language
+            </button>
+            <span id="dashUser" class="muted"></span>
+            <button
+              id="logoutBtn"
+              class="ghost"
+              style="width: auto; padding: 6px 10px; font-size: 13px"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+        <div style="padding: 8px 0">
+          <h1 id="dashWelcome" style="font-size: 18px; margin: 0">Welcome!</h1>
+          <p class="muted small" id="dashSub">You're logged in.</p>
+        </div>
+
+        <!-- Dashboard content: restored to original direct structure -->
+        <div id="dashboardContent" class="mt">
+          <div class="dashboardGrid">
+            <!-- main column -->
+            <div>
+              <div class="glassy">
+                <div class="balanceRow">
+                  <div>
+                    <div class="miniMuted">Available balance</div>
+                    <div id="balanceAmount" class="balanceAmount">
+                      ₹ 3000.00
+                    </div>
+                    <div id="balanceSub" class="miniMuted">
+                      Account: Demo Savings • ₹400.00 overdraft
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      min-width: 140px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                    "
+                  >
+                    <div class="actionsRow">
+                      <button id="sendMoneyBtn" class="actionBtn ghost1">
+                        Send Money
+                      </button>
+                    </div>
+                    <button id="statementBtn" class="ghost" style="width: 100%">
+                      View Statement
+                    </button>
+                  </div>
+                </div>
+                <p class="miniMuted mt" style="margin-top: 12px">
+                  Demo account — transactions are stored locally in your
+                  browser.
+                </p>
+              </div>
+
+              <div class="glassy mt">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div style="font-weight: 800">Recent transactions</div>
+                  <div class="miniMuted" id="txnCount">0</div>
+                </div>
+                <div id="txnList" class="txnList mt"></div>
+                <div class="dashFooter">
+                  Only a demo. Transactions are not real.
+                </div>
+              </div>
+            </div>
+
+            <!-- side column -->
+            <div>
+              <div class="glassy">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div style="font-weight: 800">Account info</div>
+                  <div class="miniMuted">Demo</div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="miniMuted">Account name</div>
+                  <div style="font-weight: 700" id="infoName">Demo User</div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="miniMuted">Account number</div>
+                  <div style="font-weight: 700" id="infoAcct">
+                    9900 1234 5678 901
+                  </div>
+                </div>
+                <div style="margin-top: 10px">
+                  <div class="miniMuted">IFSC</div>
+                  <div style="font-weight: 700">NEOB0000123</div>
+                </div>
+              </div>
+
+              <div class="glassy mt">
+                <div style="font-weight: 800">Quick tips</div>
+                <ul
+                  style="
+                    margin: 8px 0 0 16px;
+                    color: var(--muted);
+                    font-size: 13px;
+                  "
+                >
+                  <li>Send Money deducts from balance and logs transaction.</li>
+                  <li>All data saved only in this browser's localStorage.</li>
+                  <li>
+                    Press the question mark at bottom right to open chat box
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden file input used by modal flow -->
+    <input id="hiddenFile" type="file" accept="image/*" class="hidden" />
+
+    <!-- Modal (inserted dynamically) -->
+    <div id="modalRoot" class="hidden"></div>
+
+    <!-- Tesseract -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+
+    <script>
+      // Show Loan Calculator page when clicked
+      document.getElementById("newLoanLink").onclick = function () {
+        document.getElementById("dashView").classList.add("hidden");
+        document
+          .getElementById("loanCalculatorModal")
+          .classList.remove("hidden");
+      };
+      // Show Customer Care page when clicked
+      document.getElementById("customerCareLink").onclick = function () {
+        document.getElementById("dashView").classList.add("hidden");
+        document.getElementById("customerCareView").classList.remove("hidden");
+      };
+
+      // Back to Dashboard from Customer Care
+      document.getElementById("backToDashboardFromCustomerCare").onclick =
+        function () {
+          document.getElementById("customerCareView").classList.add("hidden");
+          document.getElementById("dashView").classList.remove("hidden");
+        };
+
+      // Back to Dashboard from Loan Calculator
+      document.getElementById("backToDashboardFromLoan").onclick = function () {
+        document.getElementById("loanCalculatorModal").classList.add("hidden");
+        document.getElementById("dashView").classList.remove("hidden");
+      };
+
+      // Back to Loan Calculator page from Decline
+      document.getElementById("declineLoanBtn").onclick = function () {
+        document.getElementById("loanResults").classList.add("hidden");
+        document.getElementById("loanAmount").value = ""; // Clear input fields
+        document.getElementById("loanDuration").value = "";
+      };
+
+      // Loan calculation logic
+      document.getElementById("calculateLoanBtn").onclick = function () {
+        const loanAmount = parseFloat(
+          document.getElementById("loanAmount").value
+        );
+        const loanDuration = parseInt(
+          document.getElementById("loanDuration").value
+        );
+
+        if (
+          isNaN(loanAmount) ||
+          loanAmount <= 0 ||
+          isNaN(loanDuration) ||
+          loanDuration <= 0
+        ) {
+          alert("Please enter valid loan amount and duration.");
+          return;
+        }
+
+        // Loan interest rate and calculation
+        const annualInterestRate = 10; // Assume 10% annual interest rate
+        const monthlyInterestRate = annualInterestRate / 100 / 12;
+        const months = loanDuration * 12;
+
+        // Monthly Payment formula
+        const monthlyPayment =
+          (loanAmount * monthlyInterestRate) /
+          (1 - Math.pow(1 + monthlyInterestRate, -months));
+        const totalAmount = monthlyPayment * months;
+        const totalInterest = totalAmount - loanAmount;
+
+        // Display results
+        document.getElementById("calculatedLoanAmount").textContent =
+          loanAmount.toFixed(2);
+        document.getElementById("annualInterestRate").textContent =
+          annualInterestRate.toFixed(2);
+        document.getElementById("monthlyPayment").textContent =
+          monthlyPayment.toFixed(2);
+        document.getElementById("totalInterest").textContent =
+          totalInterest.toFixed(2);
+        document.getElementById("totalAmount").textContent =
+          totalAmount.toFixed(2);
+
+        // Show the result section
+        document.getElementById("loanResults").classList.remove("hidden");
+        document.getElementById("newLoanBtn").classList.remove("hidden"); // Show the "New Loan" button
+      };
+
+      // Accept Loan logic
+      document.getElementById("acceptLoanBtn").onclick = function () {
+        const loanDetails = {
+          amount: parseFloat(document.getElementById("loanAmount").value),
+          duration: parseInt(document.getElementById("loanDuration").value),
+          monthlyPayment: parseFloat(
+            document.getElementById("monthlyPayment").textContent
+          ),
+          totalInterest: parseFloat(
+            document.getElementById("totalInterest").textContent
+          ),
+          totalAmount: parseFloat(
+            document.getElementById("totalAmount").textContent
+          ),
+        };
+
+        // Store loan data (this could be saved in localStorage or a database in a real app)
+        let loansTaken = JSON.parse(localStorage.getItem("loansTaken")) || [];
+        loansTaken.push(loanDetails);
+        localStorage.setItem("loansTaken", JSON.stringify(loansTaken));
+
+        // Display loans taken
+        showLoansTaken();
+
+        // Hide Loan Calculator and show Dashboard
+        document.getElementById("loanCalculatorModal").classList.add("hidden");
+        document.getElementById("loansTakenView").classList.remove("hidden");
+      };
+
+      // Show Loans Taken in Dashboard
+      function showLoansTaken() {
+        const loansTaken = JSON.parse(localStorage.getItem("loansTaken")) || [];
+        const loanListContainer = document.getElementById("loanList");
+        loanListContainer.innerHTML = ""; // Clear the list
+
+        if (loansTaken.length === 0) {
+          loanListContainer.innerHTML = "<p>No loans taken yet.</p>";
+          return;
+        }
+
+        loansTaken.forEach((loan, index) => {
+          const loanItem = document.createElement("div");
+          loanItem.className = "loanItem";
+          loanItem.innerHTML = `
+      <h3>Loan #${index + 1}</h3>
+      <p><strong>Amount:</strong> ₹${loan.amount}</p>
+      <p><strong>Duration:</strong> ${loan.duration} years</p>
+      <p><strong>Monthly Payment:</strong> ₹${loan.monthlyPayment}</p>
+      <p><strong>Total Interest:</strong> ₹${loan.totalInterest}</p>
+      <p><strong>Total to be Paid:</strong> ₹${loan.totalAmount}</p>
+    `;
+          loanListContainer.appendChild(loanItem);
+        });
+      }
+
+      // Show Loans Taken from Dashboard
+      document.getElementById("accountManagementBtn").onclick = function () {
+        document.getElementById("dashView").classList.add("hidden");
+        document.getElementById("loansTakenView").classList.remove("hidden");
+      };
+
+      // New Loan button to reset the form and allow user to apply for a new loan
+      document.getElementById("newLoanBtn").onclick = function () {
+        document.getElementById("loanAmount").value = ""; // Clear input fields
+        document.getElementById("loanDuration").value = "";
+        document.getElementById("loanResults").classList.add("hidden"); // Hide results
+      };
+
+      /* ---------------------
+   Helper utilities
+   --------------------- */
+      // Get elements
+      // Show About Us page when clicked
+      document.getElementById("aboutUsLink").onclick = function () {
+        // Hide the current dashboard view
+        document.getElementById("dashView").classList.add("hidden");
+
+        // Show the About Us view
+        document.getElementById("aboutUsView").classList.remove("hidden");
+      };
+
+      // Back to Dashboard from About Us page
+      document.getElementById("backToDashboardFromAbout").onclick =
+        function () {
+          // Hide About Us view
+          document.getElementById("aboutUsView").classList.add("hidden");
+
+          // Show the Dashboard again
+          document.getElementById("dashView").classList.remove("hidden");
+        };
+
+      const chatboxToggle = document.getElementById("chatboxToggle");
+      const chatbox = document.getElementById("chatbox");
+      const closeChatbox = document.getElementById("closeChatbox");
+      // Get elements
+      const accountManagementBtn = document.getElementById(
+        "accountManagementBtn"
+      );
+      const accountManagementPage = document.getElementById(
+        "accountManagementPage"
+      );
+      const backToDashboardBtn = document.getElementById("backToDashboardBtn");
+
+      // Show account management page
+      accountManagementBtn.onclick = function () {
+        accountManagementPage.classList.remove("hidden");
+        document.getElementById("dashView").classList.add("hidden"); // Hide dashboard
+      };
+
+      // Back to dashboard
+      backToDashboardBtn.onclick = function () {
+        accountManagementPage.classList.add("hidden");
+        document.getElementById("dashView").classList.remove("hidden"); // Show dashboard again
+      };
+
+      document.getElementById("changeUsernameBtn").onclick = function () {
+        const newUsername = prompt("Enter new username:");
+        if (newUsername) {
+          document.getElementById("accountUsername").textContent = newUsername;
+          // Optionally, save this change in localStorage or through a backend API
+        }
+      };
+
+      document.getElementById("changePhoneBtn").onclick = function () {
+        const newPhone = prompt("Enter new phone number:");
+        if (newPhone) {
+          document.getElementById("accountPhone").textContent = newPhone;
+          // Save the new phone number
+        }
+      };
+      document.getElementById("updatePasswordBtn").onclick = function () {
+        const newPassword = prompt("Enter new password:");
+        if (newPassword) {
+          // You can store this password change securely
+          alert("Password updated successfully.");
+        }
+      };
+      document.getElementById("deleteAccountBtn").onclick = function () {
+        const confirmation = confirm(
+          "Are you sure you want to delete your account? This action is irreversible."
+        );
+        if (confirmation) {
+          // Logic for deleting account, such as removing from localStorage or backend
+          alert("Account deleted successfully.");
+          // Redirect to login or logout after deletion
+        }
+      };
+      // Example for dynamically fetching account info (you can replace this with actual API calls)
+      const accountInfo = {
+        name: "deepam sipani",
+        username: "deepam",
+        phone: "+91 89786156067",
+      };
+
+      document.getElementById("accountName").textContent = accountInfo.name;
+      document.getElementById("accountUsername").textContent =
+        accountInfo.username;
+      document.getElementById("accountPhone").textContent = accountInfo.phone;
+
+      // Toggle chatbox visibility
+      chatboxToggle.onclick = function () {
+        chatbox.classList.toggle("hidden");
+      };
+
+      // Close the chatbox
+      closeChatbox.onclick = function () {
+        chatbox.classList.add("hidden");
+      };
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+      function show(el) {
+        el.classList.remove("hidden");
+      }
+      function hide(el) {
+        el.classList.add("hidden");
+      }
+      function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+      function hashPass(p) {
+        return btoa(p).split("").reverse().join("");
+      } // demo only
+
+      // Normalize OCR output to make matching more tolerant
+      function normalizeText(s) {
+        if (!s) return "";
+        s = s.toLowerCase();
+        s = s.replace(/[^a-z0-9\/\-\s]/g, " ");
+        s = s.replace(/\s+/g, " ").trim();
+        return s;
+      }
+      function nameTokens(full) {
+        return (full || "")
+          .toLowerCase()
+          .split(/\s+/)
+          .map((t) => t.replace(/[^a-z]/g, ""))
+          .filter(Boolean)
+          .filter((t) => t.length > 1);
+      }
+      function dobVariantsFromISO(dob) {
+        // YYYY-MM-DD => many variants
+        const parts = (dob || "").split("-");
+        if (parts.length !== 3) return [];
+        const [y, m, d] = parts;
+        const pad = (s) => (s.length === 1 ? "0" + s : s);
+        const D = String(Number(d));
+        const M = String(Number(m));
+        const variants = new Set();
+        variants.add(`${pad(d)}-${pad(m)}-${y}`);
+        variants.add(`${pad(d)}/${pad(m)}/${y}`);
+        variants.add(`${D}-${M}-${y}`);
+        variants.add(`${D}/${M}/${y}`);
+        variants.add(`${d}${m}${y}`);
+        variants.add(`${y}-${m}-${d}`);
+        variants.add(`${y}${m}${d}`);
+        variants.add(`${pad(d)} ${pad(m)} ${y}`);
+        // month name variants
+        const monthNames = {
+          "01": ["jan", "january"],
+          "02": ["feb", "february"],
+          "03": ["mar", "march"],
+          "04": ["apr", "april"],
+          "05": ["may"],
+          "06": ["jun", "june"],
+          "07": ["jul", "july"],
+          "08": ["aug", "august"],
+          "09": ["sep", "sept", "september"],
+          10: ["oct", "october"],
+          11: ["nov", "november"],
+          12: ["dec", "deceßmber"],
+        };
+        const names = monthNames[pad(m)] || [];
+        names.forEach((n) => {
+          variants.add(`${pad(d)} ${n} ${y}`);
+          variants.add(`${D} ${n} ${y}`);
+          variants.add(`${pad(d)} ${n.substr(0, 3)} ${y}`);
+        });
+        return Array.from(variants).map((v) => v.toLowerCase());
+      }
+
+      /* ---------------------
+   Views & Controls
+   --------------------- */
+      const loginView = $("loginView"),
+        signupView = $("signupView"),
+        dashView = $("dashView");
+      const toSignup = $("toSignup"),
+        backToLogin = $("backToLogin");
+      const loginBtn = $("loginBtn"),
+        createBtn = $("createBtn"),
+        verifyBtn = $("verifyBtn");
+      const loginMsg = $("loginMsg"),
+        signupMsg = $("signupMsg"),
+        verifyStatus = $("verifyStatus");
+      const hiddenFile = $("hiddenFile");
+      const modalRoot = $("modalRoot");
+
+      let currentLoggedInUser = null; // Store current logged-in user data
+
+      toSignup.onclick = () => {
+        hide(loginView);
+        show(signupView);
+        clearSignupStatus();
+      };
+      backToLogin.onclick = () => {
+        show(loginView);
+        hide(signupView);
+        clearSignupStatus();
+      };
+
+      function clearSignupStatus() {
+        signupMsg.textContent = "";
+        verifyStatus.textContent = "";
+        hide(createBtn);
+        show(verifyBtn);
+        verifyBtn.disabled = false;
+      }
+
+      /* ---------------------
+   Login logic
+   --------------------- */
+      loginBtn.onclick = () => {
+        loginMsg.textContent = "";
+        const username = $("loginUsername").value.trim();
+        const pass = $("loginPassword").value.trim();
+        if (!username || !pass) {
+          loginMsg.textContent = "Please enter username and password.";
+          return;
+        }
+        const stored = localStorage.getItem(username);
+        if (!stored) {
+          loginMsg.textContent = "User not found.";
+          return;
+        }
+        try {
+          const data = JSON.parse(stored);
+          if (data.password === hashPass(pass) && data.verified) {
+            loginMsg.style.color = "";
+            loginMsg.textContent = "";
+            showDashboard(data);
+          } else {
+            loginMsg.textContent = "Incorrect password or unverified account.";
+          }
+        } catch (e) {
+          loginMsg.textContent = "Login error.";
+        }
+      };
+
+      /* ---------------------
+   Dashboard
+   --------------------- */
+      function showDashboard(user) {
+        currentLoggedInUser = user;
+        hide(loginView);
+        hide(signupView);
+        // Change root app styling for dashboard view
+        document.getElementById("appRoot").classList.remove("app");
+        document.getElementById("appRoot").classList.add("dash-card");
+
+        show(dashView);
+        $("dashWelcome").textContent = `Welcome, ${user.name}!`;
+        $("dashSub").textContent = `Phone: ${user.phone} • Verified account`;
+        $("dashUser").textContent = user.name;
+
+        // Re-initialize dashboard elements (crucial for name/balance update)
+        initDemoDashboard(user);
+
+        // Language Toggle Text
+        $("langToggle").textContent =
+          currentLanguage === "en" ? "Toggle Language" : "भाषा बदलें";
+      }
+
+      $("logoutBtn").onclick = () => {
+        hide(dashView);
+        show(loginView);
+        // Restore root app styling
+        document.getElementById("appRoot").classList.add("app");
+        document.getElementById("appRoot").classList.remove("dash-card");
+        // clear inputs
+        $("loginUsername").value = "";
+        $("loginPassword").value = "";
+      };
+
+      /* ---------------------
+   Modal flow (DigiLocker-like)
+   --------------------- */
+
+      function openModal() {
+        modalRoot.innerHTML = `
+    <div class="modalBack" id="modalBack">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="steps"><div class="chip">DigiLocker</div><div class="muted">${translate(
+          "secure_id_verification"
+        )}</div></div>
+        <div id="modalBody">
+          <div class="centerCol">
+            <div class="mutedBlock">${translate(
+              "connecting_digilocker"
+            )}...</div>
+            <div class="smallMuted">${translate("secure_connection_wait")}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+        show(modalRoot);
+        // after brief delay, show upload UI
+        (async () => {
+          await sleep(900); // connecting
+          const body = document.getElementById("modalBody");
+          body.innerHTML = `
+      <div class="centerCol">
+        <div class="mutedBlock">${translate("upload_gov_id")}</div>
+        <div class="smallMuted">${translate("id_accepted")}</div>
+        <button id="modalUpload" class="digilockerBtn" style="margin-top:8px">
+          <span class="digilockerIcon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="8" width="18" height="12" rx="2" fill="#fff" stroke="rgba(255,255,255,0.3)"/><path d="M8 8V6a4 4 0 1 1 8 0v2" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          ${translate("upload_id")}
+        </button>
+        <div class="progressText" id="modalProgress"></div>
+        <div id="modalStatus" style="margin-top:6px"></div>
+        <div style="margin-top:10px"><button id="modalCancel" class="ghost">${translate(
+          "cancel"
+        )}</button></div>
+      </div>`;
+          // attach handlers
+          document.getElementById("modalUpload").onclick = () =>
+            hiddenFile.click();
+          document.getElementById("modalCancel").onclick = closeModal;
+        })();
+      }
+
+      function closeModal() {
+        modalRoot.innerHTML = "";
+        hide(modalRoot);
+      }
+
+      /* ---------------------
+   OCR + verification
+   --------------------- */
+
+      hiddenFile.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+          return;
+        }
+        // show verifying UI
+        const prog = document.getElementById("modalProgress");
+        const statusBox = document.getElementById("modalStatus");
+        prog.textContent = translate("reading_id_details") + "…";
+        statusBox.textContent = "";
+        // small UX pause
+        await sleep(300);
+
+        // Run Tesseract
+        try {
+          // show an intermediate message "Reading..."
+          let lastPct = 0;
+          const workerOptions = {
+            logger: (m) => {
+              if (m && m.status === "recognizing text") {
+                const pct = Math.round(m.progress * 100);
+                if (pct !== lastPct) {
+                  procSet(`${pct}%`);
+                  lastPct = pct;
+                }
+              } else if (m && m.status === "loading tesseract core") {
+                procSet(translate("preparing_ocr"));
+              }
+            },
+          };
+          function procSet(t) {
+            if (prog)
+              prog.textContent = translate("reading_id_details") + " — " + t;
+          }
+
+          // perform recognition
+          const res = await Tesseract.recognize(file, "eng", workerOptions);
+          const extracted =
+            res && res.data && res.data.text ? res.data.text : "";
+          // now perform matching
+          procSet(translate("analyzing_text"));
+          await sleep(350);
+
+          const norm = normalizeText(extracted);
+          const inputName = $("suName").value.trim();
+          const inputDob = $("suDob").value.trim(); // YYYY-MM-DD
+          const nameTokensArr = nameTokens(inputName);
+          let nameMatchCount = 0;
+          nameTokensArr.forEach((tok) => {
+            if (tok && norm.indexOf(tok) !== -1) nameMatchCount++;
+          });
+          const requiredNameMatches = Math.max(
+            1,
+            Math.ceil(nameTokensArr.length * 0.6)
+          );
+          // DOB checks
+          const dobVariants = dobVariantsFromISO(inputDob);
+          let dobMatched = false;
+          for (const v of dobVariants) {
+            if (v && norm.indexOf(v) !== -1) {
+              dobMatched = true;
+              break;
+            }
+          }
+          const yearPresent =
+            inputDob.split("-")[0] &&
+            norm.indexOf(inputDob.split("-")[0]) !== -1;
+
+          // decide
+          let verified = false;
+          if (nameMatchCount >= requiredNameMatches && dobMatched)
+            verified = true;
+          else if (
+            nameMatchCount >= Math.max(1, nameTokensArr.length - 1) &&
+            yearPresent
+          )
+            verified = true;
+          else verified = false;
+
+          // show result in modal
+          if (verified) {
+            procSet(translate("verification_successful") + " ✅");
+            const statusElem = document.getElementById("modalStatus");
+            statusElem.innerHTML = `<div class="statusSuccess">${translate(
+              "verification_successful"
+            )} — ${translate("creating_account")}...</div>`;
+            // create account now (only if username not exists)
+            await sleep(700);
+            const username = $("suUsername").value.trim();
+            const password = $("suPassword").value.trim();
+            const phone = $("suPhone").value.trim();
+            if (
+              !username ||
+              !password ||
+              !phone ||
+              !$("suName").value.trim() ||
+              !$("suDob").value.trim()
+            ) {
+              statusElem.innerHTML += `<div class="muted smallMuted">${translate(
+                "missing_signup_fields"
+              )}</div>`;
+              procSet("");
+              return;
+            }
+            if (localStorage.getItem(username)) {
+              statusElem.innerHTML += `<div class="statusFail">${translate(
+                "username_exists"
+              )}</div>`;
+              procSet("");
+              return;
+            }
+            const storedObj = {
+              name: $("suName").value.trim(),
+              dob: $("suDob").value.trim(),
+              phone,
+              password: hashPass(password),
+              verified: true,
+              created: new Date().toISOString(),
+            };
+            localStorage.setItem(username, JSON.stringify(storedObj));
+            // close modal and auto-login to dashboard
+            await sleep(700);
+            closeModal();
+            $("signupMsg").textContent = "";
+            // auto-login / go to dashboard
+            showDashboard(storedObj);
+          } else {
+            procSet("");
+            const statusElem = document.getElementById("modalStatus");
+            statusElem.innerHTML = `<div class="statusFail">${translate(
+              "verification_failed"
+            )}</div>`;
+            // allow retry: keep modal open; user can upload a different file or cancel
+          }
+        } catch (err) {
+          console.error(err);
+          if (document.getElementById("modalStatus"))
+            document.getElementById(
+              "modalStatus"
+            ).innerHTML = `<div class="statusFail">${translate(
+              "error_reading_id"
+            )}</div>`;
+          if (document.getElementById("modalProgress"))
+            document.getElementById("modalProgress").textContent = "";
+        } finally {
+          // reset hidden file so user can re-upload same file if needed
+          hiddenFile.value = "";
+        }
+      };
+
+      /* ---------------------
+   Hook verify button to modal flow
+   --------------------- */
+      verifyBtn.onclick = async () => {
+        // basic validation of signup form first
+        $("signupMsg").textContent = "";
+        $("verifyStatus").textContent = "";
+        const name = $("suName").value.trim(),
+          dob = $("suDob").value.trim(),
+          phone = $("suPhone").value.trim(),
+          username = $("suUsername").value.trim(),
+          pass = $("suPassword").value.trim();
+        if (!name || !dob || !phone || !username || !pass) {
+          $("signupMsg").textContent = translate("fill_all_fields_signup");
+          return;
+        }
+        // open modal
+        openModal();
+      };
+
+      /* ---------------------
+   When page loads, if user is already logged in? (simple)
+   --------------------- */
+      (function init() {
+        // nothing auto-logged; keep login screen visible
+      })();
+    </script>
+
+    <!-- ===========================
+         Dashboard functionality (added)
+         - Demo account storage: neo_demo_bank
+         - Transaction flow: Add Money / Send Money
+         =========================== -->
+    <script>
+      /* Dashboard data key */
+      const DEMO_KEY = "neo_demo_bank";
+
+      /* Default demo seed */
+      function demoSeed() {
+        return {
+          accountName: "Demo User",
+          accountNumber: "9900 1234 5678 901",
+          balance: 5500.0,
+          currency: "₹",
+          txns: [
+            {
+              id: genId(),
+              type: "credit",
+              title: "Initial top-up",
+              amount: 5000,
+              time: Date.now() - 1000 * 60 * 60 * 24 * 6,
+            },
+            {
+              id: genId(),
+              type: "debit",
+              title: "Grocery Store",
+              amount: 300,
+              time: Date.now() - 1000 * 60 * 60 * 24 * 2,
+            },
+            {
+              id: genId(),
+              type: "credit",
+              title: "Refund",
+              amount: 100,
+              time: Date.now() - 1000 * 60 * 60 * 24,
+            },
+          ],
+        };
+      }
+
+      function genId() {
+        return "t_" + Math.random().toString(36).slice(2, 9);
+      }
+
+      function loadDemo() {
+        const raw = localStorage.getItem(DEMO_KEY);
+        if (!raw) {
+          const seed = demoSeed();
+          localStorage.setItem(DEMO_KEY, JSON.stringify(seed));
+          return seed;
+        }
+        try {
+          return JSON.parse(raw);
+        } catch (e) {
+          const seed = demoSeed();
+          localStorage.setItem(DEMO_KEY, JSON.stringify(seed));
+          return seed;
+        }
+      }
+
+      function saveDemo(state) {
+        localStorage.setItem(DEMO_KEY, JSON.stringify(state));
+      }
+
+      let demoState = loadDemo();
+
+      function initDemoDashboard(user) {
+        // Load the latest demo state
+        demoState = loadDemo();
+
+        // Get fresh references to DOM elements
+        const infoNameEl = $("infoName");
+        const infoAcctEl = $("infoAcct");
+        const sendMoneyBtn = $("sendMoneyBtn");
+        const addMoneyBtn = $("addMoneyBtn");
+        const statementBtn = $("statementBtn");
+
+        // Populate account name with logged-in user's name (FIXED)
+        const displayName =
+          user && user.name ? user.name : demoState.accountName;
+        if (infoNameEl) {
+          infoNameEl.textContent = displayName;
+        }
+
+        // Populate account number
+        if (infoAcctEl) {
+          infoAcctEl.textContent = demoState.accountNumber;
+        }
+
+        renderBalance();
+        renderTxns();
+
+        // Re-attach handlers to the new buttons
+        if (sendMoneyBtn) sendMoneyBtn.onclick = () => openActionModal("send");
+        if (addMoneyBtn) addMoneyBtn.onclick = () => openActionModal("add");
+        if (statementBtn) statementBtn.onclick = () => openStatementModal();
+
+        // **LANGUAGE REFRESH** (Only needed to update text on dashboard)
+        refreshLanguage();
+      }
+
+      function renderBalance() {
+        // Get fresh references
+        const balanceAmountEl = $("balanceAmount");
+        const balanceSubEl = $("balanceSub");
+        if (!balanceAmountEl || !balanceSubEl) return;
+
+        const bal = Number(demoState.balance || 0);
+        balanceAmountEl.textContent = `${demoState.currency} ${formatAmount(
+          bal
+        )}`;
+        balanceSubEl.textContent = `${translate("account_label")}: ${translate(
+          "demo_savings"
+        )} • ₹0.00 ${translate("overdraft")}`;
+      }
+
+      function renderTxns() {
+        // Get fresh references
+        const txnListEl = $("txnList");
+        const txnCountEl = $("txnCount");
+        if (!txnListEl || !txnCountEl) return;
+
+        txnListEl.innerHTML = "";
+        const txns = (demoState.txns || [])
+          .slice()
+          .sort((a, b) => b.time - a.time);
+        txnCountEl.textContent = `${txns.length} ${translate("txns")}`;
+        if (txns.length === 0) {
+          txnListEl.innerHTML = `<div class="miniMuted">${translate(
+            "no_txns"
+          )}</div>`;
+          return;
+        }
+        txns.forEach((t) => {
+          const it = document.createElement("div");
+          it.className = "txnItem";
+          const left = document.createElement("div");
+          left.style.flex = "1";
+          left.innerHTML = `<div class="title">${escapeHtml(
+            t.title
+          )}</div><div class="meta">${new Date(t.time).toLocaleString()}</div>`;
+          const right = document.createElement("div");
+          right.style.textAlign = "right";
+          right.innerHTML = `<div class="${
+            t.type === "credit" ? "positive" : "negative"
+          }">${t.type === "credit" ? "+" : "-"} ${
+            demoState.currency
+          } ${formatAmount(t.amount)}</div><div class="meta">${t.id}</div>`;
+          it.appendChild(left);
+          it.appendChild(right);
+          txnListEl.appendChild(it);
+        });
+      }
+
+      /* Action modal flow */
+      function openActionModal(type) {
+        // type: 'send' or 'add'
+        const title =
+          type === "send" ? translate("send_money") : translate("add_money");
+        modalRoot.innerHTML = `
+        <div class="modalBack" id="modalBackAction">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="steps"><div class="chip">${title}</div><div class="muted">${translate(
+          "demo_banking_action"
+        )}</div></div>
+            <div id="modalActionBody">
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                ${
+                  type === "send"
+                    ? `
+                  <label class="miniMuted">${translate(
+                    "recipient_name"
+                  )}</label>
+                  <input id="act_recipient" placeholder="${translate(
+                    "eg_ravindra"
+                  )}" />
+                  <label class="miniMuted">${translate("amount")}</label>
+                  <input id="act_amount" inputmode="decimal" placeholder="${translate(
+                    "eg_250"
+                  )}" />
+                  <label class="miniMuted">${translate("note_optional")}</label>
+                  <input id="act_note" placeholder="${translate(
+                    "for_groceries"
+                  )}" />
+                `
+                    : `
+                  <label class="miniMuted">${translate("amount_to_add")}</label>
+                  <input id="act_amount" inputmode="decimal" placeholder="${translate(
+                    "eg_1000"
+                  )}" />
+                  <label class="miniMuted">${translate("source")}</label>
+                  <input id="act_source" placeholder="${translate(
+                    "eg_card_upi"
+                  )}" />
+                `
+                }
+                <div style="display:flex; gap:8px; margin-top:6px;">
+                  <button id="act_confirm" class="digilockerBtn">${title}</button>
+                  <button id="act_cancel" class="ghost">${translate(
+                    "cancel"
+                  )}</button>
+                </div>
+                <div id="act_message" style="margin-top:8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `;
+        show(modalRoot);
+        document.getElementById("act_cancel").onclick = closeModal;
+        document.getElementById("act_confirm").onclick = async () => {
+          const amtRaw = document.getElementById("act_amount").value.trim();
+          const amt = Number(amtRaw);
+          if (!amt || isNaN(amt) || amt <= 0) {
+            showActMsg(translate("enter_valid_amount"), true);
+            return;
+          }
+          if (type === "send") {
+            const recipient =
+              document.getElementById("act_recipient").value.trim() ||
+              translate("unknown");
+            const note =
+              document.getElementById("act_note").value.trim() ||
+              translate("transfer");
+            if (demoState.balance < amt) {
+              showActMsg(translate("insufficient_funds"), true);
+              return;
+            }
+            // perform debit
+            demoState.balance = Number((demoState.balance - amt).toFixed(2));
+            demoState.txns = demoState.txns || [];
+            demoState.txns.push({
+              id: genId(),
+              type: "debit",
+              title: `${translate("to")} ${recipient} — ${note}`,
+              amount: amt,
+              time: Date.now(),
+            });
+            saveDemo(demoState);
+            showActMsg(translate("transfer_successful"), false);
+            renderBalance();
+            renderTxns();
+            // auto-close after short delay
+            await sleep(900);
+            closeModal();
+          } else {
+            const source =
+              document.getElementById("act_source").value.trim() ||
+              translate("top_up");
+            demoState.balance = Number(
+              (Number(demoState.balance) + amt).toFixed(2)
+            );
+            demoState.txns = demoState.txns || [];
+            demoState.txns.push({
+              id: genId(),
+              type: "credit",
+              title: `${translate("from")} ${source}`,
+              amount: amt,
+              time: Date.now(),
+            });
+            saveDemo(demoState);
+            showActMsg(translate("amount_added"), false);
+            renderBalance();
+            renderTxns();
+            await sleep(700);
+            closeModal();
+          }
+        };
+
+        function showActMsg(m, isErr) {
+          const el = document.getElementById("act_message");
+          el.textContent = m;
+          el.style.color = isErr ? "#dc2626" : "#059669";
+          el.style.fontWeight = isErr ? "700" : "600";
+        }
+      }
+
+      /* Statement modal (simple list + export) */
+      function openStatementModal() {
+        const txns = (demoState.txns || [])
+          .slice()
+          .sort((a, b) => b.time - a.time);
+        let rows = "";
+        if (txns.length === 0) {
+          rows = `<div class="miniMuted">${translate("no_txns")}</div>`;
+        } else {
+          rows = `<div style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow:auto;">`;
+          txns.forEach((t) => {
+            rows += `<div style="display:flex; justify-content:space-between; padding:8px; border-radius:8px; border:1px solid rgba(0,0,0,0.03)"><div><div style="font-weight:700">${escapeHtml(
+              t.title
+            )}</div><div style="font-size:12px;color:var(--muted)">${new Date(
+              t.time
+            ).toLocaleString()}</div></div><div style="text-align:right">${
+              t.type === "credit" ? "+" : "-"
+            } ${demoState.currency} ${formatAmount(t.amount)}</div></div>`;
+          });
+          rows += `</div>`;
+        }
+
+        modalRoot.innerHTML = `
+        <div class="modalBack" id="modalBackStmt">
+          <div class="modal" role="dialog" aria-modal="true">
+            <div class="steps"><div class="chip">${translate(
+              "statement"
+            )}</div><div class="muted">${translate(
+          "download_or_review"
+        )}</div></div>
+            <div id="modalStmtBody">
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div><strong>${translate("statement")} — ${translate(
+          "demo_savings"
+        )}</strong></div>
+                  <div><button id="stmt_download" class="digilockerBtn">${translate(
+                    "download_csv"
+                  )}</button></div>
+                </div>
+                <div>${rows}</div>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                  <button id="stmt_close" class="ghost">${translate(
+                    "close"
+                  )}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `;
+        show(modalRoot);
+        document.getElementById("stmt_close").onclick = closeModal;
+        document.getElementById("stmt_download").onclick = () => {
+          const csv = generateCsv(demoState.txns || []);
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `neo_demo_statement_${new Date()
+            .toISOString()
+            .slice(0, 10)}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        };
+      }
+
+      function generateCsv(txns) {
+        const cols = ["id", "datetime", "type", "title", "amount"];
+        let csv = cols.join(",") + "\n";
+        (txns || []).forEach((t) => {
+          const row = [
+            t.id,
+            new Date(t.time).toISOString(),
+            t.type,
+            `"${(t.title || "").replace(/"/g, '""')}"`,
+            t.amount,
+          ];
+          csv += row.join(",") + "\n";
+        });
+        return csv;
+      }
+
+      /* Helpers */
+      function formatAmount(n) {
+        return Number(n || 0).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function escapeHtml(s) {
+        if (!s) return "";
+        return String(s).replace(/[&<>"']/g, function (m) {
+          return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          }[m];
+        });
+      }
+
+      /* ---------------------
+        Language Dictionary and Controller
+         --------------------- */
+      let currentLanguage = "en";
+
+      const dictionary = {
+        en: {
+          welcome: "Welcome",
+          phone: "Phone",
+          verified_account: "Verified account",
+          toggle_language: "Toggle Language",
+          secure_id_verification: "Secure ID verification",
+          connecting_digilocker: "Connecting to DigiLocker",
+          secure_connection_wait:
+            "Please wait while we establish a secure connection.",
+          upload_gov_id: "Upload your government ID",
+          id_accepted:
+            "Accepted: Aadhaar / PAN / Driving License (clear photo)",
+          upload_id: "Upload ID",
+          cancel: "Cancel",
+          reading_id_details: "Reading ID details",
+          preparing_ocr: "Preparing OCR engine…",
+          analyzing_text: "Analyzing text…",
+          verification_successful: "Verification successful",
+          creating_account: "creating account",
+          missing_signup_fields:
+            "Missing required fields in signup form — cannot create account.",
+          username_exists:
+            "Username already exists. Please choose another username.",
+          verification_failed:
+            "Verification failed — name or DOB not found on uploaded ID. Please try a clearer image or a different ID.",
+          error_reading_id: "Error reading ID. Try a clearer photo.",
+          fill_all_fields_signup:
+            "Please fill all signup fields before verification.",
+
+          available_balance: "Available balance",
+          account_label: "Account",
+          demo_savings: "Demo Savings",
+          overdraft: "overdraft",
+          recent_txns: "Recent transactions",
+          txns: "txns",
+          no_txns: "No transactions yet.",
+          account_info_title: "Account info",
+          account_name_registered: "Account name (Registered)",
+          phone_registered: "Phone Number (Registered)",
+          dob_registered: "Date of Birth (Registered)",
+          account_number: "Account number",
+          quick_tips: "Quick tips",
+
+          send_money: "Send Money",
+          add_money: "Add Money",
+          demo_banking_action: "Demo banking action",
+          recipient_name: "Recipient name",
+          amount: "Amount",
+          note_optional: "Note (optional)",
+          eg_ravindra: "e.g., Ravindra",
+          eg_250: "e.g., 250",
+          for_groceries: "For groceries",
+          amount_to_add: "Amount to add",
+          source: "Source",
+          eg_1000: "e.g., 1000",
+          eg_card_upi: "e.g., Card / UPI (demo)",
+          enter_valid_amount: "Please enter a valid amount.",
+          unknown: "Unknown",
+          transfer: "Transfer",
+          insufficient_funds: "Insufficient funds (demo).",
+          transfer_successful: "Transfer successful (demo).",
+          top_up: "Top-up",
+          amount_added: "Amount added to demo balance.",
+          to: "To",
+          from: "From",
+
+          statement: "Statement",
+          download_or_review: "Download or review",
+          download_csv: "Download CSV",
+          close: "Close",
+        },
+        hi: {
+          welcome: "स्वागत है",
+          phone: "फ़ोन नंबर",
+          verified_account: "सत्यापित खाता",
+          toggle_language: "भाषा बदलें",
+          secure_id_verification: "सुरक्षित आईडी सत्यापन",
+          connecting_digilocker: "डिजिलॉकर से कनेक्ट हो रहा है",
+          secure_connection_wait:
+            "कृपया सुरक्षित कनेक्शन स्थापित होने तक प्रतीक्षा करें।",
+          upload_gov_id: "अपना सरकारी आईडी अपलोड करें",
+          id_accepted: "स्वीकृत: आधार / पैन / ड्राइविंग लाइसेंस (साफ़ फोटो)",
+          upload_id: "आईडी अपलोड करें",
+          cancel: "रद्द करें",
+          reading_id_details: "आईडी विवरण पढ़ रहा है",
+          preparing_ocr: "ओसीआर इंजन तैयार कर रहा है…",
+          analyzing_text: "पाठ का विश्लेषण कर रहा है…",
+          verification_successful: "सत्यापन सफल रहा",
+          creating_account: "खाता बना रहा है",
+          missing_signup_fields:
+            "साइनअप फ़ॉर्म में आवश्यक फ़ील्ड गुम हैं — खाता नहीं बनाया जा सकता।",
+          username_exists:
+            "उपयोगकर्ता नाम पहले से मौजूद है। कृपया दूसरा उपयोगकर्ता नाम चुनें।",
+          verification_failed:
+            "सत्यापन विफल — अपलोड की गई आईडी पर नाम या जन्म तिथि नहीं मिली। कृपया एक स्पष्ट छवि या एक अलग आईडी का प्रयास करें।",
+          error_reading_id:
+            "आईडी पढ़ने में त्रुटि। स्पष्ट फोटो का प्रयास करें।",
+          fill_all_fields_signup:
+            "सत्यापन से पहले कृपया सभी साइनअप फ़ील्ड भरें।",
+
+          available_balance: "उपलब्ध शेष राशि",
+          account_label: "खाता",
+          demo_savings: "डेमो बचत",
+          overdraft: "ओवरड्राफ्ट",
+          recent_txns: "हाल के लेनदेन",
+          txns: "लेनदेन",
+          no_txns: "अभी तक कोई लेनदेन नहीं।",
+          account_info_title: "खाता जानकारी",
+          account_name_registered: "खाता नाम (पंजीकृत)",
+          phone_registered: "फ़ोन नंबर (पंजीकृत)",
+          dob_registered: "जन्म तिथि (पंजीकृत)",
+          account_number: "खाता संख्या",
+          quick_tips: "त्वरित सुझाव",
+
+          send_money: "पैसे भेजें",
+          add_money: "पैसे जोड़ें",
+          demo_banking_action: "डेमो बैंकिंग कार्रवाई",
+          recipient_name: "प्राप्तकर्ता का नाम",
+          amount: "राशि",
+          note_optional: "नोट (वैकल्पिक)",
+          eg_ravindra: "उदाहरण के लिए, रविंद्र",
+          eg_250: "उदाहरण के लिए, 250",
+          for_groceries: "किराना सामान के लिए",
+          amount_to_add: "जोड़ने के लिए राशि",
+          source: "स्रोत",
+          eg_1000: "उदाहरण के लिए, 1000",
+          eg_card_upi: "उदाहरण के लिए, कार्ड / यूपीआई (डेमो)",
+          enter_valid_amount: "कृपया एक वैध राशि दर्ज करें।",
+          unknown: "अज्ञात",
+          transfer: "स्थानांतरण",
+          insufficient_funds: "अपर्याप्त निधि (डेमो)।",
+          transfer_successful: "स्थानांतरण सफल (डेमो)।",
+          top_up: "टॉप-अप",
+          amount_added: "डेमो बैलेंस में राशि जोड़ी गई।",
+          to: "को",
+          from: "से",
+
+          statement: "विवरण",
+          download_or_review: "डाउनलोड या समीक्षा",
+          download_csv: "सीएसवी डाउनलोड करें",
+          close: "बंद करें",
+        },
+      };
+
+      function translate(key) {
+        return dictionary[currentLanguage][key] || dictionary["en"][key];
+      }
+
+      function toggleLanguage() {
+        currentLanguage = currentLanguage === "en" ? "hi" : "en";
+        refreshLanguage();
+      }
+
+      function refreshLanguage() {
+        // Update static dashboard elements on the current view
+        const langToggleBtn = $("langToggle");
+        if (langToggleBtn) {
+          langToggleBtn.textContent = translate("toggle_language");
+        }
+
+        if (
+          document.getElementById("dashView") &&
+          !document.getElementById("dashView").classList.contains("hidden")
+        ) {
+          if (currentLoggedInUser) {
+            // Update welcome banner
+            $("dashWelcome").textContent =
+              translate("welcome") + `, ${currentLoggedInUser.name}!`;
+            $("dashSub").textContent =
+              translate("phone") +
+              `: ${currentLoggedInUser.phone} • ` +
+              translate("verified_account");
+          }
+          // Re-render data-driven components to pick up new language strings
+          renderBalance();
+          renderTxns();
+        }
+      }
+
+      /* Hook up language toggle button */
+      document.addEventListener("DOMContentLoaded", () => {
+        const langToggleBtn = $("langToggle");
+        if (langToggleBtn) {
+          langToggleBtn.onclick = toggleLanguage;
+        }
+      });
+
+      /* Initialize demo UI on page load so if user had been logged in previously and showDashboard is called it will show data */
+      (function initDemoOnLoad() {
+        // nothing visible until login; but prepare demoState variable
+        demoState = loadDemo();
+      })();
+    </script>
+  </body>
+</html>
